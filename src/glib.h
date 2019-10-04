@@ -7,7 +7,7 @@
 #define g_realloc(pointer, size)	realloc((pointer), (size))
 #define g_strdup(pointer)			strdup((pointer))
 
-typedef int gint32;
+typedef long long gint32;
 typedef char gchar;
 
 #endif

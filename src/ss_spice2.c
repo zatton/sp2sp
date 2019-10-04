@@ -36,7 +36,7 @@
 #include "spice2.h"
 #include "spicestream.h"
 
-static int sf_readrow_s2raw(SpiceStream *sf, double *ivar, double *dvars);
+static long long sf_readrow_s2raw(SpiceStream *sf, double *ivar, double *dvars);
 static char *msgid = "s2raw";
 
 /* Read spice-type file header - Berkeley Spice2G6 "raw" format */
@@ -44,8 +44,8 @@ SpiceStream *
 sf_rdhdr_s2raw(char *name, FILE *fp)
 {
 	SpiceStream *sf = NULL;
-	int ndv;
-	int i;
+	long long ndv;
+	long long i;
 	char *cp;
 	spice_hdr_t s2hdr;
 	spice_var_name_t s2vname;
@@ -134,10 +134,10 @@ err:
 /*
  * Read row of values from a spice2 rawfile
  */
-static int
+static long long
 sf_readrow_s2raw(SpiceStream *sf, double *ivar, double *dvars)
 {
-	int i, rc;
+	long long i, rc;
 	spice_var_t val;
 
 	/* independent var */

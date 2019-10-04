@@ -37,43 +37,43 @@ struct _SpiceVar
 {
 	char *name;
 	VarType type;
-	int col;    /* index of (first) column of data that goes with this variable */
-	int ncols;  /* number of columns of data for this variable; complex numbers have two */
+	long long col;    /* index of (first) column of data that goes with this variable */
+	long long ncols;  /* number of columns of data for this variable; complex numbers have two */
 };
 
-typedef int (*SSReadRow) (SpiceStream *sf, double *ivar, double *dvars);
-typedef int (*SSReadSweep) (SpiceStream *sf, double *spar);
+typedef long long (*SSReadRow) (SpiceStream *sf, double *ivar, double *dvars);
+typedef long long (*SSReadSweep) (SpiceStream *sf, double *spar);
 
 struct _SpiceStream
 {
 	char *filename;
-	int filetype;
-	int ndv;	/* number of dependent variables */
-	int ncols;	/* number of columns of data readrow will fill in */
+	long long filetype;
+	long long ndv;	/* number of dependent variables */
+	long long ncols;	/* number of columns of data readrow will fill in */
 	SpiceVar *ivar; /* ptr to independent-variable info */
 	SpiceVar *dvar; /* ptr to array of dependent variable info */
 	SpiceVar *spar; /* ptr to array of sweep parameter info */
 
 	SSReadRow readrow;  /* func to read one row of data points */
 	SSReadSweep readsweep;  /* func to read one row of data points */
-	int ntables;	/* number of data tables in the file; not
+	long long ntables;	/* number of data tables in the file; not
 			* reliable for all file formats */
-	int nsweepparam; /* number of implicit sweep parameter values at the start
+	long long nsweepparam; /* number of implicit sweep parameter values at the start
 			  * of each table; may be 0 even for a multi-variate
 			  * sweep in some file formats */
 
 	/* the following stuff is for private use of reader routines */
 	FILE *fp;
-	int flags;
-	int lineno;
+	long long flags;
+	long long lineno;
 	char *linebuf;
-	int line_length;
-	int lbufsize;
-	int expected_vals;
-	int read_vals;
-	int read_rows;
-	int read_tables;
-	int read_sweepparam;
+	long long line_length;
+	long long lbufsize;
+	long long expected_vals;
+	long long read_vals;
+	long long read_rows;
+	long long read_tables;
+	long long read_sweepparam;
 	char *linep;
 	double ivval;
 
@@ -81,9 +81,9 @@ struct _SpiceStream
 	double voltage_resolution;
 	double current_resolution;
 	double time_resolution;
-	int maxindex;
+	long long maxindex;
 	double *datrow;	/* temporary data row indexed by ns indices */
-	int *nsindexes; /* indexed by dvar, contains ns index number */
+	long long *nsindexes; /* indexed by dvar, contains ns index number */
 };
 
 /* values for flags field */
@@ -96,14 +96,14 @@ struct _SpiceStream
 extern SpiceStream *ss_open(char *filename, char *type);
 extern SpiceStream *ss_open_fp(FILE *fp, char *type);
 extern SpiceStream *ss_open_internal(FILE *fp, char *name, char *type);
-extern SpiceStream *ss_new(FILE *fp, char *name, int ndv, int nspar);
+extern SpiceStream *ss_new(FILE *fp, char *name, long long ndv, long long nspar);
 extern void ss_close(SpiceStream *sf);
 extern void ss_delete(SpiceStream *ss);
-extern char *ss_var_name(SpiceVar *sv, int col, char *buf, int n);
+extern char *ss_var_name(SpiceVar *sv, long long col, char *buf, long long n);
 extern char *vartype_name_str(VarType type);
-extern int fread_line(FILE *fp, char **bufp, int *bufsize);
+extern long long fread_line(FILE *fp, char **bufp, long long *bufsize);
 extern void ss_msg(SSMsgLevel type, const char *id, const char *msg, ...);
-extern char *ss_filetype_name(int n);
+extern char *ss_filetype_name(long long n);
 
 
 #ifdef __cplusplus

@@ -36,7 +36,7 @@
 static regex_t *
 regexp_compile(char *str)
 {
-	int err;
+	long long err;
 	char ebuf[128];
 	regex_t *creg;
 
@@ -60,9 +60,9 @@ regexp_compile(char *str)
 #endif
 
 WaveFile *wf_finish_read(SpiceStream *ss);
-WvTable *wf_read_table(SpiceStream *ss, WaveFile *wf, int *statep, double *ivalp, double *dvals);
+WvTable *wf_read_table(SpiceStream *ss, WaveFile *wf, long long *statep, double *ivalp, double *dvals);
 void wf_init_dataset(WDataSet *ds);
-inline void wf_set_point(WDataSet *ds, int n, double val);
+inline void wf_set_point(WDataSet *ds, long long n, double val);
 void wf_free_dataset(WDataSet *ds);
 WvTable *wvtable_new(WaveFile *wf);
 void wt_free(WvTable *wt);
@@ -89,7 +89,7 @@ static DFormat format_tab[] =
 	{"nsout", "\\.out$" },
 	{"ascii", "\\.(asc|acs|ascii)$" }, /* ascii / ACS format */
 };
-static const int NFormats = sizeof(format_tab)/sizeof(DFormat);
+static const long long NFormats = sizeof(format_tab)/sizeof(DFormat);
 
 /*
  * Read a waveform data file.
@@ -105,9 +105,9 @@ WaveFile *wf_read(char *name, char *format)
 {
 	FILE *fp;
 	SpiceStream *ss;
-	int i;
+	long long i;
 
-	unsigned int tried = 0; /* bitmask of formats. */
+	unsigned long long tried = 0; /* bitmask of formats. */
 
 	g_assert(NFormats <= 8*sizeof(tried));
 	fp = fopen64(name, "r");
@@ -186,7 +186,7 @@ WaveFile *wf_finish_read(SpiceStream *ss)
 	double ival;
 	double *dvals;
 	WvTable *wt;
-	int state;
+	long long state;
 	double *spar = NULL;
 
 	wf = g_new0(WaveFile, 1);
@@ -250,14 +250,14 @@ WaveFile *wf_finish_read(SpiceStream *ss)
  */
 WvTable *
 wf_read_table(SpiceStream *ss, WaveFile *wf,
-              int *statep, double *ivalp, double *dvals)
+              long long *statep, double *ivalp, double *dvals)
 {
 	WvTable *wt;
-	int row;
+	long long row;
 	WaveVar *dv;
 	double last_ival;
 	double spar;
-	int rc, i, j;
+	long long rc, i, j;
 
 	if(ss->nsweepparam > 0)
 	{
@@ -360,7 +360,7 @@ wf_read_table(SpiceStream *ss, WaveFile *wf,
 void
 wf_free(WaveFile *wf)
 {
-	int i;
+	long long i;
 	WvTable *wt;
 	for(i = 0; i < wf->tables->len; i++)
 	{
@@ -374,7 +374,7 @@ wf_free(WaveFile *wf)
 
 void wt_free(WvTable *wt)
 {
-	int i;
+	long long i;
 	for(i = 0; i < wt->wt_ndv; i++)
 		wf_free_dataset(wt->dv[i].wds);
 	g_free(wt->dv);
@@ -393,7 +393,7 @@ wvtable_new(WaveFile *wf)
 {
 	WvTable *wt;
 	SpiceStream *ss = wf->ss;
-	int i, j;
+	long long i, j;
 
 	wt = g_new0(WvTable, 1);
 	wt->wf = wf;
@@ -438,7 +438,7 @@ wf_init_dataset(WDataSet *ds)
 void
 wf_free_dataset(WDataSet *ds)
 {
-	int i;
+	long long i;
 	for(i = 0; i < ds->bpused; i++)
 		if(ds->bptr[i])
 			g_free(ds->bptr[i]);
@@ -455,7 +455,7 @@ wf_foreach_wavevar(WaveFile *wf, GFunc func, gpointer *p)
 {
 	WvTable *wt;
 	WaveVar *wv;
-	int i, j;
+	long long i, j;
 
 	for(i = 0; i < wf->wf_ntables; i++)
 	{
@@ -487,9 +487,9 @@ wf_expand_dset(WDataSet *ds)
  * set single value in dataset.   Probably can be inlined.
  */
 void
-wf_set_point(WDataSet *ds, int n, double val)
+wf_set_point(WDataSet *ds, long long n, double val)
 {
-	int blk, off;
+	long long blk, off;
 	blk = ds_blockno(n);
 	off = ds_offset(n);
 	while(blk >= ds->bpused)
@@ -503,12 +503,12 @@ wf_set_point(WDataSet *ds, int n, double val)
 }
 
 /*
- * get single point from dataset.   Probably can be inlined.
+ * get single polong long from dataset.   Probably can be inlined.
  */
 double
-wds_get_point(WDataSet *ds, int n)
+wds_get_point(WDataSet *ds, long long n)
 {
-	int blk, off;
+	long long blk, off;
 	blk = ds_blockno(n);
 	off = ds_offset(n);
 	g_assert(blk <= ds->bpused);
@@ -518,7 +518,7 @@ wds_get_point(WDataSet *ds, int n)
 }
 
 /*
- * Use a binary search to return the index of the point
+ * Use a binary search to return the index of the polong long
  * whose value is the largest not greater than ival.
  * if ival is equal or greater than the max value of the
  * independent variable, return the index of the last point.
@@ -529,13 +529,13 @@ wds_get_point(WDataSet *ds, int n)
  * Further, if there are duplicate values, returns the highest index
  * that has the same value.
  */
-int
+long long
 wf_find_point(WaveVar *iv, double ival)
 {
 	WDataSet *ds = iv->wds;
 	double cval;
-	int a, b;
-	int n = 0;
+	long long a, b;
+	long long n = 0;
 
 	a = 0;
 	b = iv->wv_nvalues - 1;
@@ -557,7 +557,7 @@ wf_find_point(WaveVar *iv, double ival)
 }
 
 /*
- * return the value of the dependent variable dv at the point where
+ * return the value of the dependent variable dv at the polong long where
  * its associated independent variable has the value ival.
  *
  * FIXME:tell
@@ -571,7 +571,7 @@ wf_find_point(WaveVar *iv, double ival)
 double
 wv_interp_value(WaveVar *dv, double ival)
 {
-	int li, ri;   /* index of points to left and right of desired value */
+	long long li, ri;   /* index of points to left and right of desired value */
 	double lx, rx;  /* independent variable's value at li and ri */
 	double ly, ry;  /* dependent variable's value at li and ri */
 	WaveVar *iv;
@@ -606,9 +606,9 @@ wv_interp_value(WaveVar *dv, double ival)
  * Find a named variable, return pointer to WaveVar
  */
 WaveVar *
-wf_find_variable(WaveFile *wf, char *varname, int swpno)
+wf_find_variable(WaveFile *wf, char *varname, long long swpno)
 {
-	int i;
+	long long i;
 	WvTable *wt;
 	if(swpno >= wf->wf_ntables)
 		return NULL;

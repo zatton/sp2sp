@@ -41,7 +41,7 @@ extern SpiceStream *sf_rdhdr_s3raw(char *name, FILE *fp);
 extern SpiceStream *sf_rdhdr_s2raw(char *name, FILE *fp);
 extern SpiceStream *sf_rdhdr_ascii(char *name, FILE *fp);
 // extern SpiceStream *sf_rdhdr_nsout(char *name, FILE *fp);
-static int ss_readrow_none(SpiceStream *, double *ivar, double *dvars);
+static long long ss_readrow_none(SpiceStream *, double *ivar, double *dvars);
 
 SSMsgLevel spicestream_msg_level = WARN;
 
@@ -64,7 +64,7 @@ static DFormat format_tab[] =
 	{"ascii", sf_rdhdr_ascii },
 	// {"nsout", sf_rdhdr_nsout },
 };
-static const int NFormats = sizeof(format_tab)/sizeof(DFormat);
+static const long long NFormats = sizeof(format_tab)/sizeof(DFormat);
 
 /*
  * Open spice waveform file for reading.
@@ -77,7 +77,7 @@ SpiceStream *
 ss_open_internal(FILE *fp, char *filename, char *format)
 {
 	SpiceStream *ss;
-	int i;
+	long long i;
 
 	for(i = 0; i < NFormats; i++)
 	{
@@ -129,7 +129,7 @@ ss_open_fp(FILE *fp, char *format)
  * and must set readrow and linebuf items.
  */
 SpiceStream *
-ss_new(FILE *fp, char *filename, int ndv, int nspar)
+ss_new(FILE *fp, char *filename, long long ndv, long long nspar)
 {
 	SpiceStream *ss;
 
@@ -180,7 +180,7 @@ void ss_delete(SpiceStream *ss)
 /*
  * row-reading function that always returns EOF.
  */
-static int
+static long long
 ss_readrow_none(SpiceStream *ss, double *ivar, double *dvars)
 {
 	return 0;
@@ -191,7 +191,7 @@ static char *vartype_names[] =
 {
 	"Unknown", "Time", "Voltage", "Current", "Frequency"
 };
-const int nvartype_names = sizeof(vartype_names)/sizeof(char *);
+const long long nvartype_names = sizeof(vartype_names)/sizeof(char *);
 
 /*
  * return a string corresponding to a SpiceStream VarType.
@@ -216,13 +216,13 @@ char *vartype_name_str(VarType type)
  * buf is a pointer to a buffer to use.  If NULL, one will be allocated.
  * n is the maximum number of characters to put in the buffer.
  */
-char *ss_var_name(SpiceVar *sv, int col, char *buf, int n)
+char *ss_var_name(SpiceVar *sv, long long col, char *buf, long long n)
 {
-	int idx;
+	long long idx;
 
 	if(buf == NULL)
 	{
-		int l;
+		long long l;
 		l = strlen(sv->name + 3);
 		buf = g_new(char, l);
 		n = l;
@@ -247,7 +247,7 @@ char *ss_var_name(SpiceVar *sv, int col, char *buf, int n)
  * name of the Spicestream file format.
  * Valid file type numbers start at 0.
  */
-char *ss_filetype_name(int n)
+char *ss_filetype_name(long long n)
 {
 	if(n >= 0 && n < NFormats)
 		return format_tab[n].name;
@@ -261,11 +261,11 @@ char *ss_filetype_name(int n)
  * we allocate an initial, buffer.
  * returns 0 or EOF.
  */
-int
-fread_line(FILE *fp, char **bufp, int *bufsize)
+long long
+fread_line(FILE *fp, char **bufp, long long *bufsize)
 {
-	int c;
-	int n = 0;
+	long long c;
+	long long n = 0;
 	if(*bufp == NULL)
 	{
 		if(*bufsize == 0)
@@ -311,7 +311,7 @@ ss_msg(SSMsgLevel type, const char *id, const char *msg, ...)
 {
 	char *typestr;
 	va_list args;
-	int blen = 1024;
+	long long blen = 1024;
 	char buf[1024];
 
 	if(type < spicestream_msg_level)

@@ -32,13 +32,13 @@
 #include "glib.h"
 #include "spicestream.h"
 
-static int sf_readrow_nsout(SpiceStream *sf, double *ivar, double *dvars);
+static long long sf_readrow_nsout(SpiceStream *sf, double *ivar, double *dvars);
 static char *msgid = "nsout";
 
 struct nsvar
 {
 	char *name;
-	int index;
+	long long index;
 	VarType type;
 };
 
@@ -62,18 +62,18 @@ sf_rdhdr_nsout(char *name, FILE *fp)
 {
 	SpiceStream *sf = NULL;
 	char *line = NULL;
-	int lineno = 0;
-	int linesize = 1024;
+	long long lineno = 0;
+	long long linesize = 1024;
 	char *key, *val;
-	int got_ivline = 0;
-	int ndvars;
+	long long got_ivline = 0;
+	long long ndvars;
 	double voltage_resolution = 1.0;
 	double current_resolution = 1.0;
 	double time_resolution = 1.0;
 	GList *vlist = NULL;
 	struct nsvar *nsv;
-	int i;
-	int maxindex = 0;
+	long long i;
+	long long maxindex = 0;
 
 	while(fread_line(fp, &line, &linesize) != EOF)
 	{
@@ -235,11 +235,11 @@ err:
  * upon call, line buffer should always contain the
  * independent-variable line that starts this set of values.
  */
-static int
+static long long
 sf_readrow_nsout(SpiceStream *sf, double *ivar, double *dvars)
 {
-	int i;
-	int idx;
+	long long i;
+	long long idx;
 	char *sidx;
 	char *sval;
 	double v;

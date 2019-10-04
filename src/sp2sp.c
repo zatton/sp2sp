@@ -34,22 +34,22 @@
 #define SWEEP_PREPEND 1
 #define SWEEP_HEAD 2
 
-int g_verbose = 0;
-int sweep_mode = SWEEP_PREPEND;
+long long g_verbose = 0;
+long long sweep_mode = SWEEP_PREPEND;
 char *progname = "sp2sp";
 
-static void ascii_header_output(SpiceStream *sf, int *enab, int nidx);
-static void ascii_data_output(SpiceStream *sf, int *enab, int nidx,
-                              double begin_val, double end_val, int ndigits);
-static int parse_field_numbers(int **index, int *idxsize, int *nsel,
-                               char *list, int nfields);
-static int parse_field_names(int **index, int *idxsize, int *nsel,
+static void ascii_header_output(SpiceStream *sf, long long *enab, long long nidx);
+static void ascii_data_output(SpiceStream *sf, long long *enab, long long nidx,
+                              double begin_val, double end_val, long long ndigits);
+static long long parse_field_numbers(long long **index, long long *idxsize, long long *nsel,
+                               char *list, long long nfields);
+static long long parse_field_names(long long **index, long long *idxsize, long long *nsel,
                              char *list, SpiceStream *sf);
 static VarType get_vartype_code(char *vartype);
 
 static void usage()
 {
-	int i;
+	long long i;
 	char *s;
 
 	fprintf(stderr, "usage: %s [options] file\n", progname);
@@ -71,7 +71,7 @@ static void usage()
 	fprintf(stderr, "  -s prepend      prepend columns to all output lines\n");
 	fprintf(stderr, "  -s none         ignore sweep info\n");
 	fprintf(stderr, "  -t T          Assume that input is of type T\n");
-	fprintf(stderr, "  -v            Verbose - print detailed signal information\n");
+	fprintf(stderr, "  -v            Verbose - prlong long detailed signal information\n");
 	fprintf(stderr, " output format types:\n");
 	fprintf(stderr, "   none - no data output\n");
 	fprintf(stderr, "   ascii - lines of space-seperated numbers, with header\n");
@@ -91,22 +91,22 @@ main(int argc, char **argv)
 {
 	SpiceStream *sf;
 
-	int i;
-	int idx;
+	long long i;
+	long long idx;
 	extern int optind;
 	extern char *optarg;
-	// int x_flag = 0;
-	int errflg = 0;
+	// long long x_flag = 0;
+	long long errflg = 0;
 	char *infiletype = "hspice";
 	char *outfiletype = "ascii";
 	char *fieldnamelist = NULL;
 	char *fieldnumlist = NULL;
-	int *out_indices = NULL;
-	int outi_size = 0;
-	int nsel = 0;
+	long long *out_indices = NULL;
+	long long outi_size = 0;
+	long long nsel = 0;
 	VarType vartype = UNKNOWN;
-	int c;
-	int ndigits = 7;
+	long long c;
+	long long ndigits = 7;
 	double begin_val = -DBL_MAX;
 	double end_val = DBL_MAX;
 
@@ -269,14 +269,14 @@ main(int argc, char **argv)
 }
 
 /*
- * print all column headers.
+ * prlong long all column headers.
  * For multicolumn variables, ss_var_name will generate a column name
  * consisting of the variable name plus a suffix.
  */
 static void
-ascii_header_output(SpiceStream *sf, int *indices, int nidx)
+ascii_header_output(SpiceStream *sf, long long *indices, long long nidx)
 {
-	int i, j;
+	long long i, j;
 	char buf[1024];
 
 	if((sf->nsweepparam > 0) && (sweep_mode == SWEEP_PREPEND))
@@ -297,7 +297,7 @@ ascii_header_output(SpiceStream *sf, int *indices, int nidx)
 		}
 		else
 		{
-			int varno = indices[i]-1;
+			long long varno = indices[i]-1;
 			for(j = 0; j < sf->dvar[varno].ncols; j++)
 			{
 				if(j > 0)
@@ -311,18 +311,18 @@ ascii_header_output(SpiceStream *sf, int *indices, int nidx)
 }
 
 /*
- * print data as space-seperated columns.
+ * prlong long data as space-seperated columns.
  */
 static void
-ascii_data_output(SpiceStream *sf, int *indices, int nidx,
-                  double begin_val, double end_val, int ndigits)
+ascii_data_output(SpiceStream *sf, long long *indices, long long nidx,
+                  double begin_val, double end_val, long long ndigits)
 {
-	int i, j, tab;
-	int rc;
+	long long i, j, tab;
+	long long rc;
 	double ival;
 	double *dvals;
 	double *spar = NULL;
-	int done;
+	long long done;
 
 	dvals = g_new(double, sf->ncols);
 	if(sf->nsweepparam > 0)
@@ -376,8 +376,8 @@ ascii_data_output(SpiceStream *sf, int *indices, int nidx,
 					printf("%.*g", ndigits, ival);
 				else
 				{
-					int varno = indices[i]-1;
-					int dcolno = sf->dvar[varno].col - 1;
+					long long varno = indices[i]-1;
+					long long dcolno = sf->dvar[varno].col - 1;
 					for(j = 0; j < sf->dvar[varno].ncols; j++)
 					{
 						if(j > 0)
@@ -405,12 +405,12 @@ ascii_data_output(SpiceStream *sf, int *indices, int nidx,
 		g_free(spar);
 }
 
-static int parse_field_numbers(int **indices, int *idxsize, int *nidx, char *list, int nfields)
+static long long parse_field_numbers(long long **indices, long long *idxsize, long long *nidx, char *list, long long nfields)
 {
-	int n, i;
+	long long n, i;
 	char *fnum;
-	int err = 0;
-	int *idx = 0;
+	long long err = 0;
+	long long *idx = 0;
 	if(!*indices || idxsize == 0)
 	{
 		*idxsize = nfields*2;
@@ -450,9 +450,9 @@ static int parse_field_numbers(int **indices, int *idxsize, int *nidx, char *lis
  * Try looking for named dependent variable.  Try twice,
  * first as-is, then with "v(" prepended the way hspice mangles things.
  */
-static int find_dv_by_name(char *name, SpiceStream *sf)
+static long long find_dv_by_name(char *name, SpiceStream *sf)
 {
-	int i;
+	long long i;
 	for(i = 0; i < sf->ndv; i++)
 	{
 		if(strcasecmp(name, sf->dvar[i].name) == 0)
@@ -471,13 +471,13 @@ static int find_dv_by_name(char *name, SpiceStream *sf)
  * parse comma-seperated list of field names.  Turn on the output-enables
  * for the listed fields.
  */
-static int parse_field_names(int **indices, int *idxsize, int *nidx, char *list, SpiceStream *sf)
+static long long parse_field_names(long long **indices, long long *idxsize, long long *nidx, char *list, SpiceStream *sf)
 {
-	int err = 0;
-	int n;
+	long long err = 0;
+	long long n;
 	char *fld;
-	int i;
-	int *idx = 0;
+	long long i;
+	long long *idx = 0;
 
 	if(!*indices || idxsize == 0)
 	{
@@ -543,7 +543,7 @@ static struct vtlistel vtlist[] =
  */
 static VarType get_vartype_code(char *vartype)
 {
-	int i;
+	long long i;
 	for(i = 0; vtlist[i].s; i++)
 	{
 		if(strcasecmp(vartype, vtlist[i].s) == 0)

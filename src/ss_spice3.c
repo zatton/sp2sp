@@ -32,9 +32,9 @@
 #include "glib.h"
 #include "spicestream.h"
 
-static int sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars);
+static long long sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars);
 char *msgid = "s3raw";
-static int sf_readrow_s3bin(SpiceStream *sf, double *ivar, double *dvars);
+static long long sf_readrow_s3bin(SpiceStream *sf, double *ivar, double *dvars);
 
 /* convert variable type string from spice3 raw file to
  * our type numbers
@@ -59,16 +59,16 @@ SpiceStream* sf_rdhdr_s3raw(char *name, FILE *fp)
 {
 	SpiceStream *sf = NULL;
 	char *line = NULL;
-	int lineno = 0;
-	int linesize = 1024;
+	long long lineno = 0;
+	long long linesize = 1024;
 	char *key, *val;
-	int nvars = 0, npoints = 0;
-	int got_nvars = 0;
-	int got_values = 0;
-	int dtype_complex = 0;
-	int binary = 0;
+	long long nvars = 0, npoints = 0;
+	long long got_nvars = 0;
+	long long got_values = 0;
+	long long dtype_complex = 0;
+	long long binary = 0;
 	char *vnum, *vname, *vtypestr;
-	int i = 0;
+	long long i = 0;
 
 	while(fread_line(fp, &line, &linesize) != EOF)
 	{
@@ -167,7 +167,7 @@ SpiceStream* sf_rdhdr_s3raw(char *name, FILE *fp)
 					sf->ivar->col = 0;
 					/* ivar can't really be two-column,
 					   this is a flag that says to
-					   discard 2nd point */
+					   discard 2nd polong long */
 					if(dtype_complex)
 						sf->ivar->ncols = 2;
 					else
@@ -301,11 +301,11 @@ static char *sf_nexttoken(SpiceStream *sf)
 /*
  * Read row of values from an ascii spice3 raw file
  */
-static int
+static long long
 sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars)
 {
-	int i;
-	// int frownum;
+	long long i;
+	// long long frownum;
 	char *tok;
 	double v;
 
@@ -395,7 +395,7 @@ sf_readrow_s3raw(SpiceStream *sf, double *ivar, double *dvars)
  * the related error-checking.
  */
 
-static int
+static long long
 sf_getval_s3bin(SpiceStream *sf, double *dval)
 {
 	off64_t pos;
@@ -423,10 +423,10 @@ sf_getval_s3bin(SpiceStream *sf, double *dval)
 /*
  * Read row of values from a binay spice3 raw file
  */
-static int
+static long long
 sf_readrow_s3bin(SpiceStream *sf, double *ivar, double *dvars)
 {
-	int i, rc;
+	long long i, rc;
 	double v;
 	double dummy;
 

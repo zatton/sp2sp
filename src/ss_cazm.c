@@ -48,9 +48,9 @@
 #include "glib.h"
 #include "spicestream.h"
 
-static int sf_readrow_ascii(SpiceStream *sf, double *ivar, double *dvars);
+static long long sf_readrow_ascii(SpiceStream *sf, double *ivar, double *dvars);
 static SpiceStream *ascii_process_header(char *line, VarType ivtype,
-        char *fname, int lineno);
+        char *fname, long long lineno);
 
 /* Read spice-type file header - cazm format */
 SpiceStream *
@@ -58,9 +58,9 @@ sf_rdhdr_cazm(char *name, FILE *fp)
 {
 	SpiceStream *sf;
 	char *line = NULL;
-	int lineno = 0;
-	int linesize = 1024;
-	int done = 0;
+	long long lineno = 0;
+	long long linesize = 1024;
+	long long done = 0;
 	VarType ivtype;
 
 	while(!done)
@@ -124,8 +124,8 @@ sf_rdhdr_ascii(char *name, FILE *fp)
 {
 	SpiceStream *sf;
 	char *line = NULL;
-	int lineno = 0;
-	int linesize = 1024;
+	long long lineno = 0;
+	long long linesize = 1024;
 	char *cp;
 
 	/*
@@ -173,11 +173,11 @@ fail:
  */
 static
 SpiceStream *ascii_process_header(char *line, VarType ivtype,
-                                  char *fname, int lineno)
+                                  char *fname, long long lineno)
 {
 	SpiceStream *sf;
 	char *signam;
-	int dvsize = 64;
+	long long dvsize = 64;
 
 	signam = strtok(line, " \t\n");
 	if(!signam)
@@ -236,9 +236,9 @@ SpiceStream *ascii_process_header(char *line, VarType ivtype,
  *	0 on EOF
  *	-1 on error  (may change some ivar/dvar values)
  */
-static int sf_readrow_ascii(SpiceStream *sf, double *ivar, double *dvars)
+static long long sf_readrow_ascii(SpiceStream *sf, double *ivar, double *dvars)
 {
-	int i = 0;
+	long long i = 0;
 	char *tok;
 
 	if(fread_line(sf->fp, &sf->linebuf, &sf->lbufsize) == EOF)

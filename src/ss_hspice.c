@@ -36,13 +36,13 @@ SpiceStream *sf_rdhdr_hspice(char *name, FILE *fp);
 SpiceStream *sf_rdhdr_hsascii(char *name, FILE *fp);
 SpiceStream *sf_rdhdr_hsbin(char *name, FILE *fp);
 
-static int sf_readrow_hsascii(SpiceStream *sf, double *ivar, double *dvars);
-static int sf_readrow_hsbin(SpiceStream *sf, double *ivar, double *dvars);
-static SpiceStream *hs_process_header(int nauto, int nprobe,
-                                      int nsweepparam, char *line, char *name);
-static int sf_readsweep_hsascii(SpiceStream *sf, double *svar);
-static int sf_readsweep_hsbin(SpiceStream *sf, double *svar);
-static int sf_readblock_hsbin(FILE *fp, char **bufp, int *bufsize, int offset);
+static long long sf_readrow_hsascii(SpiceStream *sf, double *ivar, double *dvars);
+static long long sf_readrow_hsbin(SpiceStream *sf, double *ivar, double *dvars);
+static SpiceStream *hs_process_header(long long nauto, long long nprobe,
+                                      long long nsweepparam, char *line, char *name);
+static long long sf_readsweep_hsascii(SpiceStream *sf, double *svar);
+static long long sf_readsweep_hsbin(SpiceStream *sf, double *svar);
+static long long sf_readblock_hsbin(FILE *fp, char **bufp, long long *bufsize, long long offset);
 
 struct hsblock_header    /* structure of binary tr0 block headers */
 {
@@ -69,10 +69,15 @@ sf_rdhdr_hspice(char *name, FILE *fp)
 		return NULL;
 	ungetc(c, fp);
 
-	if((c & 0xff) < ' ')
+	if((c & 0xff) < ' '){
+    fprintf(stderr, "hsbin\n");
 		return sf_rdhdr_hsbin(name, fp);
-	else
+  }
+	else{
+    fprintf(stderr, "hsascii\n");
 		return sf_rdhdr_hsascii(name, fp);
+  }
+  fprintf(stderr, "null\n");
 
 	return NULL;
 }
@@ -83,14 +88,14 @@ sf_rdhdr_hsascii(char *name, FILE *fp)
 {
 	SpiceStream *sf = NULL;
 	char *line = NULL;
-	int nauto, nprobe, nsweepparam, ntables;
-	int lineno = 0;
-	int linesize = 1024;
-	int lineused;
+	long long nauto, nprobe, nsweepparam, ntables;
+	long long lineno = 0;
+	long long linesize = 1024;
+	long long lineused;
 	char lbuf[256];
 	char nbuf[16];
 	char *cp;
-	int maxlines;
+	long long maxlines;
 
 	if(fgets(lbuf, sizeof(lbuf), fp) == NULL)
 		return NULL;
@@ -138,7 +143,7 @@ sf_rdhdr_hsascii(char *name, FILE *fp)
 	lineused = 0;
 	do
 	{
-		int len;
+		long long len;
 		if(fgets(lbuf, sizeof(lbuf), fp) == NULL)
 			return NULL;
 		lineno++;
@@ -190,6 +195,7 @@ sf_rdhdr_hsascii(char *name, FILE *fp)
 fail:
 	if(line)
 		g_free(line);
+  fprintf(stderr, "fail");
 	return NULL;
 
 }
@@ -201,17 +207,18 @@ sf_rdhdr_hsbin(char *name, FILE *fp)
 
 	SpiceStream *sf = NULL;
 	char *ahdr = NULL;
-	int ahdrsize = 0;
-	int ahdrend = 0;
-	int n;
-	int datasize;
-	int nauto, nprobe, nsweepparam, ntables;
+	long long ahdrsize = 0;
+	long long ahdrend = 0;
+	long long n;
+	long long datasize;
+	long long nauto, nprobe, nsweepparam, ntables;
 	char nbuf[16];
 	struct hsblock_header hh;
 
 	do
 	{
 		n = sf_readblock_hsbin(fp, &ahdr, &ahdrsize, ahdrend);
+    //fprintf(stderr, "%lld\n",n);
 		if(n <= 0)
 			goto fail;
 		ahdrend += n;
@@ -301,13 +308,13 @@ fail:
  * Returns NULL on failure.
  */
 static SpiceStream *
-hs_process_header(int nauto, int nprobe, int nsweepparam, char *line, char *name)
+hs_process_header(long long nauto, long long nprobe, long long nsweepparam, char *line, char *name)
 {
 	char *cp;
 	char *signam;
 	SpiceStream *sf;
-	int i;
-	int hstype;
+	long long i;
+	long long hstype;
 
 	/* type of independent variable */
 	cp = strtok(line, " \t\n");
@@ -425,15 +432,15 @@ fail:
  * buffer-pointer pointed to by bufp, at offset offset.
  * The buffer is expanded with g_realloc if necessary.
  * If bufp is NULL, a new buffer  is allocated.   The buffer
- * size is maintained in the int pointed to by bufsize.
+ * size is maintained in the long long pointed to by bufsize.
  *
  */
-static int
-sf_readblock_hsbin(FILE *fp, char **bufp, int *bufsize, int offset)
+static long long
+sf_readblock_hsbin(FILE *fp, char **bufp, long long *bufsize, long long offset)
 {
 	struct hsblock_header hh;
 	gint32 trailer;
-	int eswap = 0;
+	long long eswap = 0;
 
 	if(fread(&hh, sizeof(hh), 1, fp) != 1)
 	{
@@ -448,6 +455,7 @@ sf_readblock_hsbin(FILE *fp, char **bufp, int *bufsize, int offset)
 	}
 	if(hh.h1 != 0x00000004 || hh.h3 != 0x00000004)
 	{
+    //fprintf(stderr, "%x %x\n", hh.h1, hh.h3);
 		ss_msg(DBG, "sf_readblock_hsbin", "unexepected values in block header");
 		return -1;
 	}
@@ -492,7 +500,7 @@ sf_readblock_hsbin(FILE *fp, char **bufp, int *bufsize, int offset)
 }
 
 /*
- * helper routine: get next floating-point value from data part of binary
+ * helper routine: get next floating-polong long value from data part of binary
  * hspice file.   Handles the block-structure of hspice files; all blocks
  * encountered are assumed to be data blocks.  We don't use readblock_hsbin because
  * some versions of hspice write very large blocks, which would require a
@@ -500,7 +508,7 @@ sf_readblock_hsbin(FILE *fp, char **bufp, int *bufsize, int offset)
  *
  * Returns 0 on EOF, 1 on success, negative on error.
  */
-static int
+static long long
 sf_getval_hsbin(SpiceStream *sf, double *dval)
 {
 	off64_t pos;
@@ -576,13 +584,13 @@ sf_getval_hsbin(SpiceStream *sf, double *dval)
  *
  * Returns 0 on EOF, 1 on success.
  */
-static int
+static long long
 sf_getval_hsascii(SpiceStream *sf, double *val)
 {
 	char vbuf[16];
 	char *vp;
 	char *cp;
-	int l;
+	long long l;
 
 	if(!sf->linep || (*sf->linep==0) || *sf->linep == '\n')
 	{
@@ -632,10 +640,10 @@ sf_getval_hsascii(SpiceStream *sf, double *val)
  *	-2 on end of table, with more tables supposedly still to be read.
  */
 
-static int
+static long long
 sf_readrow_hsascii(SpiceStream *sf, double *ivar, double *dvars)
 {
-	int i;
+	long long i;
 
 	if(!sf->read_sweepparam)   /* first row of table */
 	{
@@ -673,11 +681,11 @@ sf_readrow_hsascii(SpiceStream *sf, double *ivar, double *dvars)
  *	0 on EOF
  *	-1 on error  (may change some ivar/dvar values)
  */
-static int
+static long long
 sf_readrow_hsbin(SpiceStream *sf, double *ivar, double *dvars)
 {
-	int i;
-	int rc;
+	long long i;
+	long long rc;
 
 	if(!sf->read_sweepparam)   /* first row of table */
 	{
@@ -724,10 +732,10 @@ sf_readrow_hsbin(SpiceStream *sf, double *ivar, double *dvars)
  *	1 on success
  * 	-1 on error
  */
-static int
+static long long
 sf_readsweep_hsascii(SpiceStream *sf, double *svar)
 {
-	int i;
+	long long i;
 	double val;
 	for(i = 0; i < sf->nsweepparam; i++)
 	{
@@ -744,10 +752,10 @@ sf_readsweep_hsascii(SpiceStream *sf, double *svar)
 	return 1;
 }
 
-static int
+static long long
 sf_readsweep_hsbin(SpiceStream *sf, double *svar)
 {
-	int i;
+	long long i;
 	double val;
 	for(i = 0; i < sf->nsweepparam; i++)
 	{
@@ -778,7 +786,7 @@ sf_readsweep_hsbin(SpiceStream *sf, double *svar)
 /* unused function
 static long sf_guessrows_hsbin(SpiceStream *sf)
 {
-	int rc;
+	long long rc;
 	struct stat st;
 
 	rc = fstat(fileno(sf->fp), &st);

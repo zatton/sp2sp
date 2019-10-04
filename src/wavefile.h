@@ -33,7 +33,7 @@ typedef struct _WDataSet WDataSet;
 typedef struct _WvTable WvTable;
 
 /* Wave Data Set -
- * an array of double-precision floating-point values,  used to store a
+ * an array of double-precision floating-polong long values,  used to store a
  * column of values.  Organized as a block structure because we don't know
  * how many entries there will be without reading the file, and we don't
  * want to read the whole thing twice.
@@ -56,9 +56,9 @@ struct _WDataSet
 	 * that could be abstracted out and/or replaced with somthing else */
 	/* pointer to array of pointers to blocks of doubles */
 	double **bptr;
-	int bpsize; /* size of array of pointers */
-	int bpused; /* number of blocks actually allocated */
-	int nreallocs;
+	long long bpsize; /* size of array of pointers */
+	long long bpused; /* number of blocks actually allocated */
+	long long nreallocs;
 };
 
 /* Wave Variable - used for independent or dependent variable.
@@ -87,10 +87,10 @@ struct _WaveVar
 struct _WvTable
 {
 	WaveFile *wf;
-	int swindex;	/* index of the sweep, 0-based */
+	long long swindex;	/* index of the sweep, 0-based */
 	char *name;	/* name of the sweep, if any, else NULL */
 	double swval;	/* value at which the sweep was taken */
-	int nvalues;	/* number of rows */
+	long long nvalues;	/* number of rows */
 	WaveVar *iv;	/* pointer to single independent variable */
 	WaveVar *dv;	/* pointer to array of dependent var info */
 };
@@ -117,10 +117,10 @@ struct _WaveFile
 /* defined in wavefile.c */
 extern WaveFile *wf_read(char *name, char *format);
 extern double wv_interp_value(WaveVar *dv, double ival);
-extern int wf_find_point(WaveVar *iv, double ival);
-extern double wds_get_point(WDataSet *ds, int n);
+extern long long wf_find_point(WaveVar *iv, double ival);
+extern double wds_get_point(WDataSet *ds, long long n);
 extern void wf_free(WaveFile *df);
-extern WaveVar *wf_find_variable(WaveFile *wf, char *varname, int swpno);
+extern WaveVar *wf_find_variable(WaveFile *wf, char *varname, long long swpno);
 extern void wf_foreach_wavevar(WaveFile *wf, GFunc func, gpointer *p);
 
 #endif /* WAVEFILE_H */
